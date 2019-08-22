@@ -35,10 +35,10 @@ class SimpleBGPTopoLocalPref(IPTopo):
 		as1r5.addDaemon(BGP)
 		as1r6 = self.addRouter('as1r6')
 		as1r6.addDaemon(BGP)
-		as2r1 = self.addRouter('as2r1')
-		as2r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
-		as2r2 = self.addRouter('as2r2')
-		as2r2.addDaemon(BGP, address_families=(_bgp.AF_INET(networks=('dead:beef::/48',)),))
+		as4r1 = self.addRouter('as2r1')
+		as4r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
+		as4r2 = self.addRouter('as2r2')
+		as4r2.addDaemon(BGP, address_families=(_bgp.AF_INET(networks=('dead:beef::/48',)),))
 
 		# Add Links
 		self.addLink(as1r1, as1r6)
@@ -49,19 +49,19 @@ class SimpleBGPTopoLocalPref(IPTopo):
 		self.addLink(as1r4, as1r5)
 		self.addLink(as1r5, as1r6)
 		# TODO Add local pref of 99
-		self.addLink(as2r1, as1r6)
-		_bgp.set_local_pref(self, as1r6, as2r1, 99)
+		self.addLink(as4r1, as1r6)
+		_bgp.set_local_pref(self, as1r6, as4r1, 99)
 		# TODO Add local pref of 50
-		self.addLink(as2r2, as1r5)
-		_bgp.set_local_pref(self, as1r5, as2r2, 50)
+		self.addLink(as4r2, as1r5)
+		_bgp.set_local_pref(self, as1r5, as4r2, 50)
 
 		# Add full mesh
-		self.addAS(2, (as2r1, as2r2))
+		self.addAS(4, (as4r1, as4r2))
 		self.addiBGPFullMesh(1, (as1r1, as1r2, as1r3, as1r4, as1r5, as1r6))
 
 		# Add eBGP session
-		ebgp_session(self, as1r6, as2r1)
-		ebgp_session(self, as1r5, as2r2)
+		ebgp_session(self, as1r6, as4r1)
+		ebgp_session(self, as1r5, as4r2)
 
 		# Add test hosts ?
 		# for r in self.routers():

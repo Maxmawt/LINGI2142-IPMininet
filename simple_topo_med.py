@@ -48,8 +48,12 @@ class SimpleBGPTopoLocalPref(IPTopo):
 		self.addLink(as1r2, as1r4)
 		self.addLink(as1r4, as1r5)
 		self.addLink(as1r5, as1r6)
+		# TODO Add MED of 99
 		self.addLink(as4r1, as1r6)
+		_bgp.set_med(self, as1r6, as4r1, 99)
+		# TODO Add MED of 50
 		self.addLink(as4r2, as1r5)
+		_bgp.set_med(self, as1r5, as4r2, 50)
 
 		# Add full mesh
 		self.addAS(4, (as4r1, as4r2))
