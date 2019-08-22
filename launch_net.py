@@ -4,9 +4,9 @@ from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
 
 importlib.import_module('simple_bgp_network')
-from simple_topo_as import SimpleBGPAS
+from simple_topo_missing3 import SimpleBGPTopoMissing
 
-net = IPNet(topo=SimpleBGPAS())
+net = IPNet(topo=SimpleBGPTopoMissing())
 ipmininet.DEBUG_FLAG = True
 try:
 	net.start()
