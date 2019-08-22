@@ -1,14 +1,14 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import RouterConfig, BGP, ebgp_session
+from ipmininet.router.config import RouterConfig, BGP, ebgp_session, bgp_peering
 import ipmininet.router.config.bgp as _bgp
 
 
-class SimpleBGPTopo(IPTopo):
+class SimpleBGPTopoRR(IPTopo):
 	"""This topology is composed of two AS connected in dual homing with different local pref"""
 
 	def build(self, *args, **kwargs):
 		"""
-	TODO
+	TODO slide 38 iBGP
            +----------+                                   +--------+
                       |                                   |
          AS1          |                  AS2              |        AS3
@@ -50,10 +50,17 @@ class SimpleBGPTopo(IPTopo):
 		self.addLink(as1r5, as1r6)
 		self.addLink(as4r1, as1r6)
 		self.addLink(as4r2, as1r5)
+		_bgp.set_rr(self, as1r3, peers=[as1r1, as1r2, as1r4, as1r5, as1r6])
 
 		# Add full mesh
 		self.addAS(4, (as4r1, as4r2))
-		self.addiBGPFullMesh(1, (as1r1, as1r2, as1r3, as1r4, as1r5, as1r6))
+		self.addAS(1, (as1r1, as1r2, as1r3, as1r4, as1r5, as1r6))
+		bgp_peering(self, as1r3, as1r1)
+		bgp_peering(self, as1r3, as1r2)
+		bgp_peering(self, as1r3, as1r4)
+		bgp_peering(self, as1r3, as1r5)
+		bgp_peering(self, as1r3, as1r6)
+
 
 		# Add eBGP session
 		ebgp_session(self, as1r6, as4r1)
@@ -62,7 +69,7 @@ class SimpleBGPTopo(IPTopo):
 		# Add test hosts ?
 		# for r in self.routers():
 		#     self.addLink(r, self.addHost('h%s' % r))
-		super(SimpleBGPTopo, self).build(*args, **kwargs)
+		super(SimpleBGPTopoRR, self).build(*args, **kwargs)
 
 	def bgp(self, name):
 		r = self.addRouter(name, config=RouterConfig)
