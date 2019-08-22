@@ -3,7 +3,7 @@ from ipmininet.router.config import RouterConfig, BGP, ebgp_session
 import ipmininet.router.config.bgp as _bgp
 
 
-class SimpleBGPAS(IPTopo):
+class SimpleBGPTopoAS(IPTopo):
 	"""This topology is composed of two AS connected in dual homing with different local pref"""
 
 	def build(self, *args, **kwargs):
@@ -82,7 +82,7 @@ class SimpleBGPAS(IPTopo):
 		# Add test hosts ?
 		# for r in self.routers():
 		#     self.addLink(r, self.addHost('h%s' % r))
-		super(SimpleBGPAS, self).build(*args, **kwargs)
+		super(SimpleBGPTopoAS, self).build(*args, **kwargs)
 
 	def bgp(self, name):
 		r = self.addRouter(name, config=RouterConfig)

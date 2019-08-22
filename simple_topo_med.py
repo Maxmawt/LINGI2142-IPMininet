@@ -3,12 +3,12 @@ from ipmininet.router.config import RouterConfig, BGP, ebgp_session
 import ipmininet.router.config.bgp as _bgp
 
 
-class SimpleBGPTopoLocalPref(IPTopo):
+class SimpleBGPTopoMed(IPTopo):
 	"""This topology is composed of two AS connected in dual homing with different local pref"""
 
 	def build(self, *args, **kwargs):
 		"""
-	TODO
+	TODO slide 25 iBGP
            +----------+                                   +--------+
                       |                                   |
          AS1          |                  AS2              |        AS3
@@ -48,10 +48,8 @@ class SimpleBGPTopoLocalPref(IPTopo):
 		self.addLink(as1r2, as1r4)
 		self.addLink(as1r4, as1r5)
 		self.addLink(as1r5, as1r6)
-		# TODO Add MED of 99
 		self.addLink(as4r1, as1r6)
 		_bgp.set_med(self, as1r6, as4r1, 99)
-		# TODO Add MED of 50
 		self.addLink(as4r2, as1r5)
 		_bgp.set_med(self, as1r5, as4r2, 50)
 
@@ -66,7 +64,7 @@ class SimpleBGPTopoLocalPref(IPTopo):
 		# Add test hosts ?
 		# for r in self.routers():
 		#     self.addLink(r, self.addHost('h%s' % r))
-		super(SimpleBGPTopoLocalPref, self).build(*args, **kwargs)
+		super(SimpleBGPTopoMed, self).build(*args, **kwargs)
 
 	def bgp(self, name):
 		r = self.addRouter(name, config=RouterConfig)
