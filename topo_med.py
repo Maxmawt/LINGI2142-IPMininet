@@ -56,7 +56,7 @@ class MedBGPTopo(IPTopo):
 		self.addLink(as1r5, as1r6)
 		self.addLink(as4r1, as1r5)
 		self.addLink(as4r2, as1r4)
-		self.addLink(as3r1, as1r1)
+		self.addLink(as3r2, as1r1)
 		self.addLink(as3r1, as1r6)
 		self.addLink(as3r1, as3r2, igp_cost=7)
 		self.addLink(as3r1, as2r1)
@@ -64,10 +64,10 @@ class MedBGPTopo(IPTopo):
 		self.addLink(as4r1, as4r2, igp_cost=2)
 
 		# Set Med
-		_bgp.set_med(self, as1r1, as3r2, 7)
-		_bgp.set_med(self, as1r6, as3r1, 0)
-		_bgp.set_med(self, as1r5, as4r1, 0)
-		_bgp.set_med(self, as1r4, as4r2, 2)
+		_bgp.set_med(self, as3r2, as1r1, 7)
+		_bgp.set_med(self, as3r1, as1r6, 0)
+		_bgp.set_med(self, as4r1, as1r5, 0)
+		_bgp.set_med(self, as4r2, as1r4, 2)
 		
 		# Add full mesh
 		self.addAS(2, (as2r1,))
