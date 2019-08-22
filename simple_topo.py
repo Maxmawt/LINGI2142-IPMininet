@@ -4,9 +4,10 @@ import ipmininet.router.config.bgp as _bgp
 
 
 class SimpleBGPTopo(IPTopo):
-    """This topology is composed of two AS connected in dual homing with different local pref"""
-    def build(self, *args, **kwargs):
-        """
+	"""This topology is composed of two AS connected in dual homing with different local pref"""
+
+	def build(self, *args, **kwargs):
+		"""
 	TODO
            +----------+                                   +--------+
                       |                                   |
@@ -21,57 +22,51 @@ class SimpleBGPTopo(IPTopo):
                       |                                   |
          +------------+                                   +--------+
         """
-        # Add all routers
-        as1r1 = self.addRouter('as1r1')
-        as1r1.addDaemon(BGP, routerid='1.1.1.1')
-        as1r2 = self.addRouter('as1r2')
-        as1r2.addDaemon(BGP, routerid='1.1.1.2')
-        as1r3 = self.addRouter('as1r3')
-        as1r3.addDaemon(BGP, routerid='1.1.1.3')
-        as1r4 = self.addRouter('as1r4')
-        as1r4.addDaemon(BGP, routerid='1.1.1.4')
-        as1r5 = self.addRouter('as1r5')
-        as1r5.addDaemon(BGP, routerid='1.1.1.5')
-        as1r6 = self.addRouter('as1r6')
-        as1r6.addDaemon(BGP, routerid='1.1.1.6')
-        as2r1 = self.addRouter('as2r1')
-        has2r1 = self.addHost('has2r1', ip='4.0.0.1')
-        self.addLink(as2r1, has2r1)
-        as2r2 = self.addRouter('as2r2')
-        has2r2 = self.addHost('has2r2', ip='4.0.0.2')
-        self.addLink(as2r2, has2r2)
+		# Add all routers
+		as1r1 = self.addRouter('as1r1')
+		as1r1.addDaemon(BGP)
+		as1r2 = self.addRouter('as1r2')
+		as1r2.addDaemon(BGP)
+		as1r3 = self.addRouter('as1r3')
+		as1r3.addDaemon(BGP)
+		as1r4 = self.addRouter('as1r4')
+		as1r4.addDaemon(BGP)
+		as1r5 = self.addRouter('as1r5')
+		as1r5.addDaemon(BGP)
+		as1r6 = self.addRouter('as1r6')
+		as1r6.addDaemon(BGP)
+		as2r1 = self.addRouter('as2r1')
+		as2r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
+		as2r2 = self.addRouter('as2r2')
+		as2r2.addDaemon(BGP, address_families=(_bgp.AF_INET(networks=('dead:beef::/48',)),))
 
-        # Export prefix 4.0.0.0 with bgp
-        as2r1.addDaemon(BGP, address_families=(_bgp.AF_INET(networks=('4.0.0.0/24',)),))
-        as2r2.addDaemon(BGP, address_families=(_bgp.AF_INET(networks=('4.0.0.0/24',)),))
-        
-        # Add Links
-        self.addLink(as1r1, as1r6)
-        self.addLink(as1r1, as1r3)
-        self.addLink(as1r3, as1r2)
-        self.addLink(as1r3, as1r6)
-        self.addLink(as1r2, as1r4)
-        self.addLink(as1r4, as1r5)
-        self.addLink(as1r5, as1r6)
-        self.addLink(as2r1, as1r6)
-        self.addLink(as2r2, as1r5)
+		# Add Links
+		self.addLink(as1r1, as1r6)
+		self.addLink(as1r1, as1r3)
+		self.addLink(as1r3, as1r2)
+		self.addLink(as1r3, as1r6)
+		self.addLink(as1r2, as1r4)
+		self.addLink(as1r4, as1r5)
+		self.addLink(as1r5, as1r6)
+		self.addLink(as2r1, as1r6)
+		self.addLink(as2r2, as1r5)
 
-	# Add AS
-        self.addiBGPFullMesh(1,(as1r1, as1r2, as1r3, as1r4, as1r5, as1r6))
-        self.addAS(2, (as2r1, as2r2))
+		# Add full mesh
+		self.addAS(2, (as2r1, as2r2))
+		self.addiBGPFullMesh(1, (as1r1, as1r2, as1r3, as1r4, as1r5, as1r6))
 
-        # Add eBGP peering
-        ebgp_session(self, as1r6, as2r1)
-        ebgp_session(self, as1r5, as2r2)
+		# Add eBGP session
+		ebgp_session(self, as1r6, as2r1)
+		ebgp_session(self, as1r5, as2r2)
 
-        # Add test hosts ?
-        # for r in self.routers():
-        #     self.addLink(r, self.addHost('h%s' % r))
-        super(SimpleBGPTopo, self).build(*args, **kwargs)
+		# Add test hosts ?
+		# for r in self.routers():
+		#     self.addLink(r, self.addHost('h%s' % r))
+		super(SimpleBGPTopo, self).build(*args, **kwargs)
 
-    def bgp(self, name):
-        r = self.addRouter(name, config=RouterConfig)
-        r.addDaemon(BGP, address_families=(
-            _bgp.AF_INET(redistribute=('connected',)),
-            _bgp.AF_INET6(redistribute=('connected',))))
-        return r
+	def bgp(self, name):
+		r = self.addRouter(name, config=RouterConfig)
+		r.addDaemon(BGP, address_families=(
+			_bgp.AF_INET(redistribute=('connected',)),
+			_bgp.AF_INET6(redistribute=('connected',))))
+		return r
