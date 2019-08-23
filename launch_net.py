@@ -4,9 +4,9 @@ from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
 
 importlib.import_module('simple_bgp_network')
-from topo_med import MedBGPTopo
+from simple_topo_err import SimpleBGPTopoErr
 
-net = IPNet(topo=MedBGPTopo())
+net = IPNet(topo=SimpleBGPTopoErr())
 ipmininet.DEBUG_FLAG = True
 try:
 	net.start()
