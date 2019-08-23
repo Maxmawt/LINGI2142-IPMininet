@@ -2,7 +2,7 @@
 
 ## Useful Commands
 
-* To get the route in `ipv6` of a node NODE
+* To get the routes in `ipv6` of a node NODE
 ```bash
 mininet> NODE route -6
 ```
