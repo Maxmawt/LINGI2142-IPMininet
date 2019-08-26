@@ -1,6 +1,5 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import RouterConfig, BGP, ebgp_session, bgp_peering
-import ipmininet.router.config.bgp as _bgp
+from ipmininet.router.config import RouterConfig, BGP, ebgp_session, bgp_peering, set_rr
 
 
 class SimpleBGPTopo2RR(IPTopo):
@@ -36,9 +35,9 @@ class SimpleBGPTopo2RR(IPTopo):
 		as1r6 = self.addRouter('as1r6')
 		as1r6.addDaemon(BGP)
 		as4r1 = self.addRouter('as4r1')
-		as4r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
+		as4r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
 		as4r2 = self.addRouter('as4r2')
-		as4r2.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
+		as4r2.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
 
 		# Add Links
 		self.addLink(as1r1, as1r6)
@@ -50,23 +49,13 @@ class SimpleBGPTopo2RR(IPTopo):
 		self.addLink(as1r5, as1r6)
 		self.addLink(as4r1, as1r6)
 		self.addLink(as4r2, as1r5)
-		_bgp.set_rr(self, as1r3, peers=[as1r1, as1r2, as1r4, as1r5, as1r6])
-		_bgp.set_rr(self, as1r5, peers=[as1r1, as1r2, as1r4, as1r3, as1r6])
+		set_rr(self, as1r3, peers=[as1r1, as1r2, as1r4, as1r5, as1r6])
+		set_rr(self, as1r5, peers=[as1r1, as1r2, as1r4, as1r3, as1r6])
 
 		# Add full mesh
 		self.addAS(4, (as4r1, as4r2))
 		self.addAS(1, (as1r1, as1r2, as1r3, as1r4, as1r5, as1r6))
-		bgp_peering(self, as1r3, as1r1)
-		bgp_peering(self, as1r3, as1r2)
-		bgp_peering(self, as1r3, as1r4)
-		bgp_peering(self, as1r3, as1r5)
-		bgp_peering(self, as1r3, as1r6)
-		bgp_peering(self, as1r5, as1r1)
-		bgp_peering(self, as1r5, as1r2)
-		bgp_peering(self, as1r5, as1r3)
-		bgp_peering(self, as1r5, as1r4)
-		bgp_peering(self, as1r5, as1r6)
-
+		
 		# Add eBGP session
 		ebgp_session(self, as1r6, as4r1)
 		ebgp_session(self, as1r5, as4r2)

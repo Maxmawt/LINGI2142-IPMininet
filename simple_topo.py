@@ -36,9 +36,9 @@ class SimpleBGPTopo(IPTopo):
 		as1r6 = self.addRouter('as1r6')
 		as1r6.addDaemon(BGP)
 		as4r1 = self.addRouter('as4r1')
-		as4r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
+		as4r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
 		as4r2 = self.addRouter('as4r2')
-		as4r2.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
+		as4r2.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
 
 		# Add Links
 		self.addLink(as1r1, as1r6)

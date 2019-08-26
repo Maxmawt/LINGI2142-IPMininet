@@ -1,6 +1,5 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import RouterConfig, BGP, ebgp_session, bgp_peering
-import ipmininet.router.config.bgp as _bgp
+from ipmininet.router.config import RouterConfig, BGP, ebgp_session, bgp_peering, set_rr
 
 
 class BGPTopo2RR(IPTopo):
@@ -44,26 +43,58 @@ class BGPTopo2RR(IPTopo):
 		as3r1 = self.addRouter('as3r1')
 		as3r1.addDaemon(BGP)
 		as2r1 = self.addRouter('as2r1')
-		as2r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
+		as2r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
+		as2h1 = self.addHost("as2h1")
+		as1h1 = self.addHost("as1h1")
+        as1h2 = self.addHost("as1h2")
+        as1h3 = self.addHost("as1h3")
+        as1h4 = self.addHost("as1h4")
+        as1h5 = self.addHost("as1h5")
+        as1h6 = self.addHost("as1h6")
 
 		# Add Links
-		self.addLink(as1r1, as1r6)
-		self.addLink(as1r1, as1r3)
-		self.addLink(as1r3, as1r2)
-		self.addLink(as1r3, as1r6)
-		self.addLink(as1r2, as1r4)
-		self.addLink(as1r4, as1r5)
-		self.addLink(as1r5, as1r6)
-		self.addLink(as4r1, as1r5)
-		self.addLink(as4r2, as1r4)
-		self.addLink(as3r1, as1r1)
-		self.addLink(as5r1, as1r6)
-		self.addLink(as3r1, as5r1)
-		self.addLink(as5r1, as2r1)
-		self.addLink(as2r1, as4r1)
-		self.addLink(as4r1, as4r2)
-		_bgp.set_rr(self, as1r3, peers=[as1r1, as1r2, as1r4, as1r5, as1r6])
-		_bgp.set_rr(self, as1r6, peers=[as1r1, as1r2, as1r4, as1r3, as1r5])
+		self.addLink(as1r1, as1r6, params1={"ip": ("fd00:1:1::1/48",)},
+                     params2={"ip": ("fd00:1:1::2/48",)})
+		self.addLink(as1r1, as1r3, params1={"ip": ("fd00:1:2::1/48",)},
+                     params2={"ip": ("fd00:1:2::2/48",)})
+		self.addLink(as1r3, as1r2, params1={"ip": ("fd00:1:4::1/48",)},
+                     params2={"ip": ("fd00:1:4::2/48",)})
+		self.addLink(as1r3, as1r6, params1={"ip": ("fd00:1:3::1/48",)},
+                     params2={"ip": ("fd00:1:3::2/48",)})
+		self.addLink(as1r2, as1r4, params1={"ip": ("fd00:1:5::1/48",)},
+                     params2={"ip": ("fd00:1:5::2/48",)})
+		self.addLink(as1r4, as1r5, params1={"ip": ("fd00:1:6::1/48",)},
+                     params2={"ip": ("fd00:1:6::2/48",)})
+		self.addLink(as1r5, as1r6, params1={"ip": ("fd00:1:7::1/48",)},
+                     params2={"ip": ("fd00:1:7::2/48",)})
+		self.addLink(as4r1, as1r5, params1={"ip": ("fd00:4:2::1/48",)},
+                     params2={"ip": ("fd00:4:2::2/48",)})
+		self.addLink(as4r2, as1r4, params1={"ip": ("fd00:4:1::1/48",)},
+                     params2={"ip": ("fd00:4:1::2/48",)})
+		self.addLink(as3r1, as1r1, params1={"ip": ("fd00:3:1::1/48",)},
+                     params2={"ip": ("fd00:3:1::2/48",)})
+		self.addLink(as5r1, as1r6; params1={"ip": ("fd00:5:1::1/48",)},
+                     params2={"ip": ("fd00:5:1::2/48",)})
+		self.addLink(as3r1, as5r1, params1={"ip": ("fd00:5:2::1/48",)},
+                     params2={"ip": ("fd00:5:2::2/48",)})
+		self.addLink(as5r1, as2r1, params1={"ip": ("fd00:2:1::1/48",)},
+                     params2={"ip": ("fd00:2:1::2/48",)})
+		self.addLink(as2r1, as4r1, params1={"ip": ("fd00:2:2::1/48",)},
+                     params2={"ip": ("fd00:2:2::2/48",)})
+		self.addLink(as4r1, as4r2, params1={"ip": ("fd00:4:3::1/48",)},
+                     params2={"ip": ("fd00:4:3::2/48",)})
+		self.addLink(as2r1, as2h1, params1={"ip": ("dead:beef::1/32",)},
+                     params2={"ip": ("dead:beef::2/32",)})
+
+		self.addLink(as1r1, as1h1)
+        self.addLink(as1r2, as1h2)
+        self.addLink(as1r3, as1h3)
+        self.addLink(as1r4, as1h4)
+        self.addLink(as1r5, as1h5)
+        self.addLink(as1r6, as1h6)
+
+		set_rr(self, as1r3, peers=[as1r1, as1r2, as1r4, as1r5, as1r6])
+		set_rr(self, as1r6, peers=[as1r1, as1r2, as1r4, as1r3, as1r5])
 
 		# Add full mesh
 		self.addAS(2, (as2r1,))
@@ -71,16 +102,7 @@ class BGPTopo2RR(IPTopo):
 		self.addAS(5, (as5r1,))
 		self.addiBGPFullMesh(4, routers=[as4r1, as4r2])
 		self.addAS(1, (as1r1, as1r2, as1r3, as1r4, as1r5, as1r6))
-		bgp_peering(self, as1r3, as1r1)
-		bgp_peering(self, as1r3, as1r2)
-		bgp_peering(self, as1r3, as1r4)
-		bgp_peering(self, as1r3, as1r5)
-		bgp_peering(self, as1r3, as1r6)
-		bgp_peering(self, as1r6, as1r1)
-		bgp_peering(self, as1r6, as1r2)
-		bgp_peering(self, as1r6, as1r3)
-		bgp_peering(self, as1r6, as1r4)
-		bgp_peering(self, as1r6, as1r5)
+		
 
 		# Add eBGP session
 		ebgp_session(self, as1r6, as5r1)

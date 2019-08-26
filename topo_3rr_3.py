@@ -1,6 +1,5 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import RouterConfig, BGP, ebgp_session, bgp_peering
-import ipmininet.router.config.bgp as _bgp
+from ipmininet.router.config import RouterConfig, BGP, ebgp_session, bgp_peering, set_rr
 
 
 class BGPTopo3RR(IPTopo):
@@ -74,10 +73,10 @@ class BGPTopo3RR(IPTopo):
 		self.addLink(as5r1, as1r6)
 		self.addLink(as3r1, as5r1)
 		self.addLink(as5r1, as2r1)
-		_bgp.set_rr(self, as1r2, peers=[as1r1, as1r3, as1r4, as1r5, as1r6, as1r7, as1r8, as1r9, as1ra, as1rb])
-		_bgp.set_rr(self, as1r3, peers=[as1r1, as1r2, as1r4, as1r5, as1r6, as1r7, as1r8, as1r9, as1ra, as1rb])
-		_bgp.set_rr(self, as1r8, peers=[as1r1, as1r2, as1r3, as1r4, as1r5, as1r6, as1r7, as1r9, as1ra, as1rb])
-		_bgp.set_rr(self, as1r9, peers=[as1r1, as1r2, as1r3, as1r4, as1r5, as1r6, as1r7, as1r8, as1ra, as1rb])
+		set_rr(self, as1r2, peers=[as1r1, as1r3, as1r4, as1r5, as1r6, as1r7, as1r8, as1r9, as1ra, as1rb])
+		set_rr(self, as1r3, peers=[as1r1, as1r2, as1r4, as1r5, as1r6, as1r7, as1r8, as1r9, as1ra, as1rb])
+		set_rr(self, as1r8, peers=[as1r1, as1r2, as1r3, as1r4, as1r5, as1r6, as1r7, as1r9, as1ra, as1rb])
+		set_rr(self, as1r9, peers=[as1r1, as1r2, as1r3, as1r4, as1r5, as1r6, as1r7, as1r8, as1ra, as1rb])
 
 		# Add full mesh
 		self.addAS(2, (as2r1,))
@@ -85,47 +84,7 @@ class BGPTopo3RR(IPTopo):
 		self.addAS(5, (as5r1,))
 		self.addAS(1, (as1r1, as1r2, as1r3, as1r4, as1r5, as1r6, as1r7, as1r8, as1r9, as1ra, as1rb))
 
-		bgp_peering(self, as1r2, as1r1)
-		bgp_peering(self, as1r2, as1r3)
-		bgp_peering(self, as1r2, as1r4)
-		bgp_peering(self, as1r2, as1r5)
-		bgp_peering(self, as1r2, as1r6)
-		bgp_peering(self, as1r2, as1r7)
-		bgp_peering(self, as1r2, as1r8)
-		bgp_peering(self, as1r2, as1r9)
-		bgp_peering(self, as1r2, as1ra)
-		bgp_peering(self, as1r2, as1rb)
-		bgp_peering(self, as1r3, as1r1)
-		bgp_peering(self, as1r3, as1r2)
-		bgp_peering(self, as1r3, as1r4)
-		bgp_peering(self, as1r3, as1r5)
-		bgp_peering(self, as1r3, as1r6)
-		bgp_peering(self, as1r3, as1r7)
-		bgp_peering(self, as1r3, as1r8)
-		bgp_peering(self, as1r3, as1r9)
-		bgp_peering(self, as1r3, as1ra)
-		bgp_peering(self, as1r3, as1rb)
-		bgp_peering(self, as1r8, as1r1)
-		bgp_peering(self, as1r8, as1r2)
-		bgp_peering(self, as1r8, as1r3)
-		bgp_peering(self, as1r8, as1r4)
-		bgp_peering(self, as1r8, as1r5)
-		bgp_peering(self, as1r8, as1r6)
-		bgp_peering(self, as1r8, as1r7)
-		bgp_peering(self, as1r8, as1r9)
-		bgp_peering(self, as1r8, as1ra)
-		bgp_peering(self, as1r8, as1rb)
-		bgp_peering(self, as1r9, as1r1)
-		bgp_peering(self, as1r9, as1r2)
-		bgp_peering(self, as1r9, as1r3)
-		bgp_peering(self, as1r9, as1r4)
-		bgp_peering(self, as1r9, as1r5)
-		bgp_peering(self, as1r9, as1r6)
-		bgp_peering(self, as1r9, as1r7)
-		bgp_peering(self, as1r9, as1r8)
-		bgp_peering(self, as1r9, as1ra)
-		bgp_peering(self, as1r9, as1rb)
-
+		
 		# Add eBGP session
 		ebgp_session(self, as1r6, as5r1)
 		ebgp_session(self, as1r1, as3r1)
