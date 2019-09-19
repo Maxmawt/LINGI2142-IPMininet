@@ -1,6 +1,5 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import RouterConfig, BGP, ebgp_session, set_med, new_access_list
-import ipmininet.router.config.bgp as _bgp
+from ipmininet.router.config import BGP, ebgp_session, AccessList, AF_INET6
 
 
 class MedBGPTopo(IPTopo):
@@ -8,19 +7,7 @@ class MedBGPTopo(IPTopo):
 
     def build(self, *args, **kwargs):
         """
-	TODO slide 26 iBGP
-		   +----------+                                   +--------+
-					  |                                   |
-		 AS1          |                  AS2              |        AS3
-					  |                                   |
-					  |                                   |
-	+-------+   eBGP  |  +-------+     iBGP    +-------+  |  eBGP   +-------+
-	| as1r1 +------------+ as2r1 +-------------+ as2r2 +------------+ as3r1 |
-	+-------+         |  +-------+             +-------+  |         +-------+
-					  |                                   |
-					  |                                   |
-					  |                                   |
-		 +------------+                                   +--------+
+        Topo from slide 26 iBGP
 		"""
 
         # Add all routers
@@ -35,7 +22,7 @@ class MedBGPTopo(IPTopo):
         as3r1 = self.bgp('as3r1')
         as3r2 = self.bgp('as3r2')
         as2r1 = self.addRouter('as2r1')
-        as2r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
+        as2r1.addDaemon(BGP, address_families=(AF_INET6(networks=('dead:beef::/32',)),))
         as2h1 = self.addHost("as2h1")
         as1h1 = self.addHost("as1h1")
         as1h2 = self.addHost("as1h2")
@@ -86,11 +73,11 @@ class MedBGPTopo(IPTopo):
         self.addLink(as1r6, as1h6)
 
         # Set Med
-        new_access_list(self, (as3r2, as1r1, as3r1, as1r6, as4r1, as1r5, as4r2, as1r4), 'all', ('any',))
-        set_med(self, as3r2, as1r1, 7, filter_type='access-list', filter_names=('all',))
-        set_med(self, as3r1, as1r6, 0, filter_type='access-list', filter_names=('all',))
-        set_med(self, as4r1, as1r5, 0, filter_type='access-list', filter_names=('all',))
-        set_med(self, as4r2, as1r4, 2, filter_type='access-list', filter_names=('all',))
+        al = AccessList(name='all', entries=('any',))
+        as3r2.get_config(BGP).set_med(7, to_peer=as1r1, matching=(al,))
+        as3r1.get_config(BGP).set_med(0, to_peer=as1r6, matching=(al,))
+        as4r1.get_config(BGP).set_med(0, to_peer=as1r5, matching=(al,))
+        as4r2.get_config(BGP).set_med(2, to_peer=as1r4, matching=(al,))
 
         # Add full mesh
         self.addAS(2, (as2r1,))
@@ -111,9 +98,3 @@ class MedBGPTopo(IPTopo):
         #     self.addLink(r, self.addHost('h%s' % r))
         super(MedBGPTopo, self).build(*args, **kwargs)
 
-    def bgp(self, name):
-        r = self.addRouter(name)
-        r.addDaemon(BGP, address_families=(
-            _bgp.AF_INET(redistribute=('connected',)),
-            _bgp.AF_INET6(redistribute=('connected',))))
-        return r

@@ -1,26 +1,12 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import RouterConfig, BGP, ebgp_session, bgp_peering, set_rr
-import ipmininet.router.config.bgp as _bgp
+from ipmininet.router.config import BGP, ebgp_session, bgp_peering, set_rr, AF_INET6
 
 
 class SimpleBGPTopoRR(IPTopo):
-    """This topology is composed of two AS connected in dual homing with different local pref"""
 
     def build(self, *args, **kwargs):
         """
-	TODO slide 38 iBGP
-           +----------+                                   +--------+
-                      |                                   |
-         AS1          |                  AS2              |        AS3
-                      |                                   |
-                      |                                   |
-    +-------+   eBGP  |  +-------+     iBGP    +-------+  |  eBGP   +-------+
-    | as1r1 +------------+ as2r1 +-------------+ as2r2 +------------+ as3r1 |
-    +-------+         |  +-------+             +-------+  |         +-------+
-                      |                                   |
-                      |                                   |
-                      |                                   |
-         +------------+                                   +--------+
+        Topo from slide 38 iBGP
         """
         # Add all routers
         as1r1 = self.bgp('as1r1')
@@ -30,9 +16,9 @@ class SimpleBGPTopoRR(IPTopo):
         as1r5 = self.bgp('as1r5')
         as1r6 = self.bgp('as1r6')
         as4r1 = self.addRouter('as4r1')
-        as4r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
+        as4r1.addDaemon(BGP, address_families=(AF_INET6(networks=('dead:beef::/48',)),))
         as4r2 = self.addRouter('as4r2')
-        as4r2.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/48',)),))
+        as4r2.addDaemon(BGP, address_families=(AF_INET6(networks=('dead:beef::/48',)),))
         h1 = self.addHost('h1')
 
         # Add Links
@@ -57,14 +43,5 @@ class SimpleBGPTopoRR(IPTopo):
         ebgp_session(self, as1r6, as4r1)
         ebgp_session(self, as1r5, as4r2)
 
-        # Add test hosts ?
-        # for r in self.routers():
-        #     self.addLink(r, self.addHost('h%s' % r))
         super(SimpleBGPTopoRR, self).build(*args, **kwargs)
 
-    def bgp(self, name):
-        r = self.addRouter(name)
-        r.addDaemon(BGP, address_families=(
-            _bgp.AF_INET(redistribute=('connected',)),
-            _bgp.AF_INET6(redistribute=('connected',))))
-        return r

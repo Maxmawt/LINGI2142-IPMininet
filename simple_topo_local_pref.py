@@ -1,79 +1,68 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import RouterConfig, BGP, ebgp_session, set_local_pref, new_access_list
-import ipmininet.router.config.bgp as _bgp
+from ipmininet.router.config import BGP, ebgp_session, AccessList, AF_INET6
 
 
 class SimpleBGPTopoLocalPref(IPTopo):
-    """This topology is composed of two AS connected in dual homing with different local pref"""
+    """This topology is composed of two AS connected in dual homing
+     with a higher local pref for routes from as4r1 than from as4r2.
+     Thus, all the traffic coming from AS1 will go through the link
+     between as1r6 and as4r1."""
 
     def build(self, *args, **kwargs):
         """
-	TODO
-		   +----------+                                   +--------+
-					  |                                   |
-		 AS1          |                  AS2              |        AS3
-					  |                                   |
-					  |                                   |
-	+-------+   eBGP  |  +-------+     iBGP    +-------+  |  eBGP   +-------+
-	| as1r1 +------------+ as2r1 +-------------+ as2r2 +------------+ as3r1 |
-	+-------+         |  +-------+             +-------+  |         +-------+
-					  |                                   |
-					  |                                   |
-					  |                                   |
-		 +------------+                                   +--------+
-		"""
+                                 +
+                           AS1   |   AS4
+        +-------+                |
+        | as1r1 +--------+       |
+        +---+---+        |       |
+          2 |            |       |
+        +---+---+    +---+---+   |   +-------+
+        | as1r3 +----+ as1r6 +-------+ as4r1 +--------+
+        +---+---+    +---+---+   |   +-------+        |
+            |            |       |                    |
+        +---+---+        |       |                 +--+--+     +-------+
+        | as1r2 |        |       |                 | s4  +-----+ as4h1 |
+        +---+---+        |       |                 +--+--+     +-------+
+          4 |            |       |                    |
+        +---+---+    +---+---+   |   +-------+        |
+        | as1r4 +----+ as1r5 +-------+ as4r2 +--------+
+        +-------+    +-------+   |   +-------+
+                                 |
+                                 +
+        """
+
         # Add all routers
         as1r1 = self.bgp('as1r1')
         as1r2 = self.bgp('as1r2')
         as1r3 = self.bgp('as1r3')
         as1r4 = self.bgp('as1r4')
-        as1r5 = self.bgp('as1r5')
-        as1r6 = self.bgp('as1r6')
-        as4r1 = self.addRouter('as4r1')
-        as4r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
-        as4r2 = self.addRouter('as4r2')
-        as4r2.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
-        as4h1 = self.addHost("as4h1")
-        as1h1 = self.addHost("as1h1")
-        as1h2 = self.addHost("as1h2")
-        as1h3 = self.addHost("as1h3")
-        as1h4 = self.addHost("as1h4")
-        as1h5 = self.addHost("as1h5")
-        as1h6 = self.addHost("as1h6")
+        as1r5 = self.bgp('as1r5', family=AF_INET6(redistribute=('ospf6', 'connected')))
+        as1r6 = self.bgp('as1r6', family=AF_INET6(redistribute=('ospf6', 'connected')))
+        as4r1 = self.bgp('as4r1', family=AF_INET6(networks=('dead:beef::/32',)))
+        as4r2 = self.bgp('as4r2', family=AF_INET6(networks=('dead:beef::/32',)))
+
+        # Add the host and the switch
+        as4h1 = self.addHost('as4h1')
+        switch = self.addSwitch('s4')
 
         # Add Links
-        self.addLink(as1r1, as1r6, params1={"ip": ("fd00:1:1::1/48",)},
-                     params2={"ip": ("fd00:1:1::2/48",)})
-        self.addLink(as1r1, as1r3, params1={"ip": ("fd00:1:2::1/48",)},
-                     params2={"ip": ("fd00:1:2::2/48",)})
-        self.addLink(as1r3, as1r2, params1={"ip": ("fd00:3:1::1/48",)},
-                     params2={"ip": ("fd00:3:1::2/48",)})
-        self.addLink(as1r3, as1r6, params1={"ip": ("fd00:3:2::1/48",)},
-                     params2={"ip": ("fd00:3:2::2/48",)})
-        self.addLink(as1r2, as1r4, params1={"ip": ("fd00:4:1::1/48",)},
-                     params2={"ip": ("fd00:4:1::2/48",)})
-        self.addLink(as1r4, as1r5, params1={"ip": ("fd00:4:2::1/48",)},
-                     params2={"ip": ("fd00:4:2::2/48",)})
-        self.addLink(as1r5, as1r6, params1={"ip": ("fd00:5:1::1/48",)},
-                     params2={"ip": ("fd00:5:1::2/48",)})
-        self.addLink(as4r1, as1r6, params1={"ip": ("fd00:6:1::1/48",)},
-                     params2={"ip": ("fd00:6:1::2/48",)})
-        self.addLink(as4r2, as1r5, params1={"ip": ("fd00:5:2::1/48",)},
-                     params2={"ip": ("fd00:5:2::2/48",)})
-        self.addLink(as4r1, as4h1, params1={"ip": ("dead:beef::1/32",)},
-                     params2={"ip": ("dead:beef::2/32",)})
-        self.addLink(as4r2, as4h1, params1={"ip": ("dead:beef::2/32",)},
-                     params2={"ip": ("dead:beef::1/32",)})
-        self.addLink(as1r1, as1h1)
-        self.addLink(as1r2, as1h2)
-        self.addLink(as1r3, as1h3)
-        self.addLink(as1r4, as1h4)
-        self.addLink(as1r5, as1h5)
-        self.addLink(as1r6, as1h6)
+        self.addLink(as1r1, as1r6)
+        self.addLink(as1r1, as1r3, igp_metric=2)
+        self.addLink(as1r3, as1r2)
+        self.addLink(as1r3, as1r6)
+        self.addLink(as1r2, as1r4, igp_metric=4)
+        self.addLink(as1r4, as1r5)
+        self.addLink(as1r5, as1r6)
+        self.addLink(as4r1, as1r6)
+        self.addLink(as4r2, as1r5)
+        self.addLink(as4r1, switch)
+        self.addLink(as4r2, switch)
+        self.addLink(switch, as4h1)
+        self.addSubnet((as4r1, as4r2, as4h1), subnets=('dead:beef::/32',))
 
-        new_access_list(self, (as1r6, as1r5), 'all', ('any',))
-        set_local_pref(self, as1r6, as4r1, 99, filter_type='access-list', filter_names=('all',))
-        set_local_pref(self, as1r5, as4r2, 50, filter_type='access-list', filter_names=('all',))
+        al = AccessList(name='all', entries=('any',))
+        as1r6.get_config(BGP).set_local_pref(99, from_peer=as4r1, matching=(al,))
+        as1r5.get_config(BGP).set_local_pref(50, from_peer=as4r2, matching=(al,))
 
         # Add full mesh
         self.addAS(4, (as4r1, as4r2))
@@ -83,14 +72,9 @@ class SimpleBGPTopoLocalPref(IPTopo):
         ebgp_session(self, as1r6, as4r1)
         ebgp_session(self, as1r5, as4r2)
 
-        # Add test hosts ?
-        # for r in self.routers():
-        #     self.addLink(r, self.addHost('h%s' % r))
         super(SimpleBGPTopoLocalPref, self).build(*args, **kwargs)
 
-    def bgp(self, name):
+    def bgp(self, name, family=AF_INET6()):
         r = self.addRouter(name)
-        r.addDaemon(BGP, address_families=(
-            _bgp.AF_INET(redistribute=('connected',)),
-            _bgp.AF_INET6(redistribute=('connected',))))
+        r.addDaemon(BGP, address_families=(family,))
         return r

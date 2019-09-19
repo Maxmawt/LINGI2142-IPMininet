@@ -1,26 +1,12 @@
 from ipmininet.iptopo import IPTopo
-from ipmininet.router.config import RouterConfig, BGP, ebgp_session, bgp_peering, set_rr
-import ipmininet.router.config.bgp as _bgp
+from ipmininet.router.config import BGP, ebgp_session, bgp_peering, set_rr, AF_INET6
 
 
 class BGPTopoTE1(IPTopo):
-    """This topology is composed of two AS connected in dual homing with different local pref"""
 
     def build(self, *args, **kwargs):
         """
-	TODO slide ? BGP_RR_TE with R3 and R6 as RRs
-           +----------+                                   +--------+
-                      |                                   |
-         AS1          |                  AS2              |        AS3
-                      |                                   |
-                      |                                   |
-    +-------+   eBGP  |  +-------+     iBGP    +-------+  |  eBGP   +-------+
-    | as1r1 +------------+ as2r1 +-------------+ as2r2 +------------+ as3r1 |
-    +-------+         |  +-------+             +-------+  |         +-------+
-                      |                                   |
-                      |                                   |
-                      |                                   |
-         +------------+                                   +--------+
+        Topo from slide 30 BGP_RR_TE with R3 and R6 as RRs
         """
         # Add all routers
         as1r1 = self.bgp('as1r1')
@@ -30,16 +16,16 @@ class BGPTopoTE1(IPTopo):
         as1r5 = self.bgp('as1r5')
         as1r6 = self.bgp('as1r6')
         as8r1 = self.addRouter('as8r1')
-        as8r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
+        as8r1.addDaemon(BGP, address_families=(AF_INET6(networks=('dead:beef::/32',)),))
         as8r2 = self.addRouter('as8r2')
-        as8r2.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('dead:beef::/32',)),))
+        as8r2.addDaemon(BGP, address_families=(AF_INET6(networks=('dead:beef::/32',)),))
         h1 = self.addHost('h1')
         as7r1 = self.addRouter('as7r1')
-        as7r1.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('feeb:daed::/32',)),))
+        as7r1.addDaemon(BGP, address_families=(AF_INET6(networks=('feeb:daed::/32',)),))
         as7r2 = self.addRouter('as7r2')
-        as7r2.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('feeb:daed::/32',)),))
+        as7r2.addDaemon(BGP, address_families=(AF_INET6(networks=('feeb:daed::/32',)),))
         as7r3 = self.addRouter('as7r3')
-        as7r3.addDaemon(BGP, address_families=(_bgp.AF_INET6(networks=('feeb:daed::/32',)),))
+        as7r3.addDaemon(BGP, address_families=(AF_INET6(networks=('feeb:daed::/32',)),))
         h2 = self.addHost('h2')
 
         # Add Links
@@ -77,14 +63,5 @@ class BGPTopoTE1(IPTopo):
         ebgp_session(self, as1r5, as7r3)
         ebgp_session(self, as1r6, as7r3)
 
-        # Add test hosts ?
-        # for r in self.routers():
-        #     self.addLink(r, self.addHost('h%s' % r))
         super(BGPTopoTE1, self).build(*args, **kwargs)
 
-    def bgp(self, name):
-        r = self.addRouter(name)
-        r.addDaemon(BGP, address_families=(
-            _bgp.AF_INET(redistribute=('connected',)),
-            _bgp.AF_INET6(redistribute=('connected',))))
-        return r
