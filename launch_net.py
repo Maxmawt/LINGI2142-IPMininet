@@ -2,6 +2,7 @@ import importlib
 import ipmininet
 from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
+from ipmininet.clean import cleanup
 from mininet.log import lg, LEVELS
 
 from simple_bgp_network import SimpleBGPTopo
@@ -77,3 +78,4 @@ if __name__ == '__main__':
         IPCLI(net)
     finally:
         net.stop()
+        cleanup()

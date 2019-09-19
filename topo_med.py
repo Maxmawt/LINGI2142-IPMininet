@@ -3,7 +3,6 @@ from ipmininet.router.config import BGP, ebgp_session, AccessList, AF_INET6
 
 
 class MedBGPTopo(IPTopo):
-    """This topology is composed of two AS connected in dual homing with different local pref"""
 
     def build(self, *args, **kwargs):
         """
@@ -93,8 +92,10 @@ class MedBGPTopo(IPTopo):
         ebgp_session(self, as3r1, as2r1)
         ebgp_session(self, as2r1, as4r1)
 
-        # Add test hosts ?
-        # for r in self.routers():
-        #     self.addLink(r, self.addHost('h%s' % r))
         super(MedBGPTopo, self).build(*args, **kwargs)
 
+    def bgp(self, name):
+        r = self.addRouter(name)
+        r.addDaemon(BGP, address_families=(
+            AF_INET6(redistribute=('connected',)),))
+        return r

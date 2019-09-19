@@ -46,3 +46,8 @@ class SimpleBGPTopoErr(IPTopo):
 
         super(SimpleBGPTopoErr, self).build(*args, **kwargs)
 
+    def bgp(self, name):
+        r = self.addRouter(name)
+        r.addDaemon(BGP, address_families=(
+            AF_INET6(redistribute=('connected',)),))
+        return r
