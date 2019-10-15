@@ -50,3 +50,8 @@ NODE> show show bgp ipv6
 ```bash
 mininet> links
 ```
+
+## Contribute
+
+If you find errors, do not hesitate to raise an issue. 
+If you want to add topologies, feel free to open a pull request.
